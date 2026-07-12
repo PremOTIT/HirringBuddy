@@ -973,31 +973,6 @@ function driveStatus(msg){
   }
 }
 
-function handleMobileRedirectReturn(){
-  // After Google redirects back, the access token arrives in the URL
-  // fragment (e.g. #access_token=...&...), not via a JS callback —
-  // that's the nature of redirect-mode OAuth. Parse it once on load,
-  // then clean the URL so the token doesn't linger in browser history
-  // or get accidentally shared if she copies the page URL.
-  if(!window.location.hash || !window.location.hash.includes('access_token')){
-    return;
-  }
-  try{
-    const params = new URLSearchParams(window.location.hash.slice(1));
-    const token = params.get('access_token');
-    if(token){
-      googleAccessToken = token;
-      // Clean the sensitive token out of the visible URL immediately.
-      history.replaceState(null, '', window.location.pathname);
-      // onSignedIn() runs after initGoogle() finishes setting up the UI,
-      // so defer slightly to avoid racing the DOM/init order.
-      setTimeout(() => { if(typeof onSignedIn === 'function') onSignedIn(); }, 50);
-    }
-  }catch(e){
-    console.warn('Failed to parse redirect token', e);
-  }
-}
-
 function initGoogle(){
   try{
     if(typeof google === 'undefined' || !google.accounts){
@@ -1006,25 +981,33 @@ function initGoogle(){
       return;
     }
 
-    // Mobile browsers (Chrome on Android especially) frequently block or
-    // silently kill JS-triggered popups, which is what the default
-    // popup-based token flow relies on. Detecting mobile and switching to
-    // a redirect-based flow avoids that failure mode entirely — the
-    // tradeoff is a full page navigation to Google and back, rather than
-    // a popup, which is less slick but actually works reliably on phones.
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 820;
-
-    if(isMobile){
-      handleMobileRedirectReturn();
-    }
-
+    // Correction from an earlier version of this code: Google's Token
+    // Client (google.accounts.oauth2.initTokenClient) — which is what
+    // this app uses to get a Drive access token — only supports popup
+    // mode. It does NOT support ux_mode:'redirect' or redirect_uri;
+    // those options exist only for the separate Code Client
+    // (initCodeClient), a different flow that needs a backend server to
+    // exchange the code, which this app doesn't have. An earlier version
+    // of this file set ux_mode:'redirect' here, which the Token Client
+    // silently ignored — it kept trying popup mode regardless, and that
+    // popup gets blocked by mobile Chrome because there's no supported
+    // way around it at the Token Client level. This version removes
+    // that dead configuration and instead detects an actually-blocked
+    // popup and tells her clearly what happened and what to do.
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: DRIVE_SCOPE,
-      ux_mode: isMobile ? 'redirect' : 'popup',
-      redirect_uri: isMobile ? window.location.origin + window.location.pathname : undefined,
       callback: (resp) => {
-        if(resp.error){ driveStatus('Sign-in failed: ' + resp.error); return; }
+        if(resp.error){
+          if(resp.error === 'popup_closed_by_user'){
+            driveStatus('Sign-in window closed before finishing — try again.');
+          }else if(resp.error === 'popup_failed_to_open'){
+            driveStatus("Your browser blocked the sign-in popup. Check Chrome's popup-blocker settings for this site, then try again.");
+          }else{
+            driveStatus('Sign-in failed: ' + resp.error);
+          }
+          return;
+        }
         googleAccessToken = resp.access_token;
         onSignedIn();
       }
@@ -1034,6 +1017,11 @@ function initGoogle(){
         driveStatus('Not set up yet — see SETUP.md');
         return;
       }
+      // Calling requestAccessToken() synchronously, directly inside this
+      // click handler with no await/setTimeout before it, is what keeps
+      // the browser treating the resulting popup as user-initiated —
+      // any delay here is exactly what causes mobile browsers to block
+      // it as an unrequested popup.
       tokenClient.requestAccessToken();
     };
     document.getElementById('driveSignInBtn').addEventListener('click', handleSignInClick);
