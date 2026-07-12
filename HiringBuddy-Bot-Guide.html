@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HiringBuddy Bot — Complete Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7F0; --ink:#1F2A24; --accent:#C9622B;
+    --sage:#5B7B6C; --ochre:#8A6D3B; --line:#E8DFD0; --card:#FFFDF9; --muted:#7A7264;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.6;}
+  .ff-serif{font-family:'Fraunces',serif;}
+  .ff-mono{font-family:'JetBrains Mono',monospace;}
+
+  .hero{background:var(--ink); color:var(--paper); padding:56px 24px 44px; text-align:center;}
+  .hero-bear{font-size:44px; margin-bottom:12px;}
+  .hero h1{font-family:'Fraunces',serif; font-size:34px; font-weight:600;}
+  .hero h1 span{color:var(--accent);}
+  .hero-sub{font-size:15px; color:#B8C4BC; margin-top:10px; max-width:480px; margin-left:auto; margin-right:auto;}
+  .care-note{
+    font-family:'Fraunces', serif; font-style:italic; font-size:15px; color:#F2D9D0;
+    background:rgba(201,98,43,0.18); border:1px solid rgba(201,98,43,0.35); border-radius:14px;
+    padding:14px 22px; max-width:480px; margin:20px auto 0; line-height:1.5;
+  }
+
+  nav.toc{max-width:720px; margin:-24px auto 40px; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:20px 24px; box-shadow:0 8px 24px rgba(31,42,36,0.08); position:relative; z-index:5;}
+  nav.toc-title{font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--sage); margin-bottom:10px;}
+  nav.toc a{display:block; padding:6px 0; color:var(--ink); text-decoration:none; font-size:13.5px; border-bottom:1px solid var(--line);}
+  nav.toc a:last-child{border-bottom:none;}
+  nav.toc a:hover{color:var(--accent);}
+  nav.toc a span{color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:11px; margin-right:8px;}
+
+  main{max-width:720px; margin:0 auto; padding:0 20px 100px;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+  .section-tag{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; letter-spacing:.05em;
+    text-transform:uppercase; color:var(--accent); background:#FFF3F0; padding:5px 13px; border-radius:20px; margin-bottom:12px;}
+  h2{font-family:'Fraunces',serif; font-size:26px; margin-bottom:10px; font-weight:600; color:var(--ink);}
+  .lead{font-size:14.5px; color:var(--muted); margin-bottom:20px; max-width:600px;}
+
+  .step{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:14px;
+    display:flex; gap:16px; align-items:flex-start;}
+  .step-num{flex-shrink:0; width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:600; font-size:14.5px;}
+  .step-body h3{font-size:14.5px; font-weight:700; margin-bottom:4px; color:var(--ink);}
+  .step-body p{font-size:13.5px; color:var(--ink); opacity:0.85;}
+
+  .cmd-box{
+    background:#1F2A24; border-radius:10px; padding:14px 18px; margin:14px 0;
+    font-family:'JetBrains Mono',monospace; font-size:13.5px; color:#E8B96B; overflow-x:auto;
+  }
+
+  .tip{background:#F5F8F1; border-left:3px solid var(--sage); border-radius:8px; padding:14px 18px; margin:16px 0; font-size:13px;}
+  .tip b{color:var(--sage);}
+  .warn{background:#FFF3F0; border-left:3px solid var(--accent); border-radius:8px; padding:14px 18px; margin:16px 0; font-size:13px;}
+  .warn b{color:var(--accent);}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13px;}
+  th{text-align:left; background:var(--ink); color:var(--paper); padding:9px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.04em;}
+  td{padding:10px 12px; border-bottom:1px solid var(--line);}
+  td:first-child{font-family:'JetBrains Mono',monospace; color:var(--accent); font-weight:600; white-space:nowrap;}
+  tr:nth-child(even){background:var(--card);}
+
+  .honest-list{list-style:none; margin:14px 0;}
+  .honest-list li{padding:10px 0 10px 26px; position:relative; font-size:13.5px; border-bottom:1px solid var(--line);}
+  .honest-list li:last-child{border-bottom:none;}
+  .honest-list li::before{content:'•'; position:absolute; left:8px; color:var(--accent); font-weight:700;}
+
+  .closing{text-align:center; padding:40px 24px; background:var(--card); border-top:1px solid var(--line); margin-top:60px;}
+  .closing p{font-family:'Fraunces',serif; font-style:italic; font-size:17px; color:var(--sage);}
+
+  @media (max-width:600px){
+    .hero h1{font-size:26px;}
+    .step{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-bear">🧸</div>
+  <h1>Hiring<span>Buddy</span> Bot — Complete Guide</h1>
+  <div class="hero-sub">A little helper for scheduling, reminders, and keeping your hiring work organized — just by texting.</div>
+  <div class="care-note">A gentle note before we start — this bot is still learning its footing, same as any of us on a first day. If a message doesn't land quite right, that's okay. Be patient with it, and it'll take good care of you back. 💛</div>
+</div>
+
+<nav class="toc">
+  <div class="toc-title">Jump to a section</div>
+  <a href="#what"><span>01</span>What this is</a>
+  <a href="#start"><span>02</span>Getting started</a>
+  <a href="#add"><span>03</span>Adding a candidate</a>
+  <a href="#profile"><span>04</span>Seeing everything about one candidate</a>
+  <a href="#score"><span>05</span>Scoring an interview</a>
+  <a href="#schedule"><span>06</span>Scheduling an interview</a>
+  <a href="#outcome"><span>07</span>Logging how it went</a>
+  <a href="#digest"><span>08</span>Your morning digest</a>
+  <a href="#commands"><span>09</span>Full command reference</a>
+  <a href="#help"><span>10</span>How this helps, day to day</a>
+  <a href="#honest"><span>11</span>A few honest notes</a>
+</nav>
+
+<main>
+
+<section id="what">
+  <div class="section-tag">🧸 the basics</div>
+  <h2>What this is</h2>
+  <p class="lead">HiringBuddy has two parts. You already have the app on your phone — the dashboards you screen-share in interviews. This is the second part: a little helper that lives inside Telegram, made for the day-to-day work of scheduling interviews, logging candidates on the go, and getting reminded before things happen.</p>
+  <p class="lead">You don't need to choose between them. Think of the bot as the quick, conversational way in — perfect for when you're between meetings and just want to jot something down without opening a whole app.</p>
+</section>
+
+<section id="start">
+  <div class="section-tag">🐝 step one</div>
+  <h2>Getting started</h2>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Open the link you were sent</h3><p>Tapping it opens a chat with the bot directly, the same way any Telegram contact would.</p></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Say hello</h3><p>Send /start — this is the only "setup" step. The bot introduces itself and shows everything it can do.</p></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Just talk to it like texting a colleague</h3><p>No menus to hunt through — everything happens through short messages, the same way you'd message anyone else.</p></div></div>
+</section>
+
+<section id="add">
+  <div class="section-tag">📝 step two</div>
+  <h2>Adding a candidate</h2>
+  <p class="lead">This is the thing you'll do most — and the bot walks you through it step by step, asking one question at a time.</p>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Send /add</h3><p>The bot asks for the candidate's name first.</p></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Answer each question as it comes</h3><p>Name → Role → Sourcing channel → Current stage → Recruiter → Email. Send '-' to skip anything optional.</p></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><h3>You'll get a confirmation with their number</h3><p>Something like "✅ Added Ananya — candidate #1." That number is how you'll refer to them from now on.</p></div></div>
+  <div class="tip"><b>💡 Tip:</b> Fields like email and recruiter are optional — skip them with '-' if you don't have that info yet. You can always add it later.</div>
+</section>
+
+<section id="profile">
+  <div class="section-tag">👤 step three</div>
+  <h2>Seeing everything about one candidate</h2>
+  <p class="lead">Once you have a candidate's number, /profile pulls together everything known about them — role, stage, scorecard, and full interview history — into one message.</p>
+  <div class="cmd-box">/profile 3</div>
+  <p class="lead">If they haven't been scored or scheduled yet, the bot tells you exactly what to do next instead of showing an empty screen.</p>
+</section>
+
+<section id="score">
+  <div class="section-tag">🎯 step four</div>
+  <h2>Scoring an interview</h2>
+  <p class="lead">Right after speaking with someone, /score walks you through five quick questions — Technical depth, Communication, Problem solving, Time management, Collaboration — each rated 1 to 5.</p>
+  <div class="cmd-box">/score 3</div>
+  <p class="lead">Just send a number each time it asks. Takes under a minute, saved permanently against that candidate.</p>
+</section>
+
+<section id="schedule">
+  <div class="section-tag">📅 step five</div>
+  <h2>Scheduling an interview</h2>
+  <p class="lead">One line books an interview. The round number is tracked automatically — you never have to remember or type it yourself.</p>
+  <div class="cmd-box">/schedule 3 2026-07-15 14:30 Technical @Aditya Group</div>
+  <p class="lead">Candidate #3, July 15th at 2:30 PM, a Technical round, for Aditya Group. Company name is optional.</p>
+  <div class="tip"><b>⏰ Note:</b> You'll automatically get a reminder shortly before this interview starts — no need to set anything extra.</div>
+</section>
+
+<section id="outcome">
+  <div class="section-tag">✅ step six</div>
+  <h2>Logging how it went</h2>
+  <p class="lead">Right after a call, one short message closes the loop.</p>
+  <div class="cmd-box">/outcome 5 Hired Great structured thinking, clear communicator</div>
+  <p class="lead">Outcome must be one of: Hired, Rejected, No-show, or Pending. Everything after that is a free-text note, entirely optional.</p>
+</section>
+
+<section id="digest">
+  <div class="section-tag">☀️ step seven</div>
+  <h2>Your morning digest</h2>
+  <p class="lead">Every morning, without asking, the bot sends one message summarizing the day ahead — every interview scheduled for today, who they're with, and what round it is.</p>
+  <div class="tip"><b>☀️ This lands on its own</b>, around 8:00 AM. You never need to check for it — it just arrives, so your day starts already informed.</div>
+</section>
+
+<section id="commands">
+  <div class="section-tag">📋 reference</div>
+  <h2>Full command reference</h2>
+  <p class="lead">You never need to memorize any of this — the bot always tells you the right command at the right moment.</p>
+
+  <table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td>/add</td><td>Log a new candidate, step by step</td></tr>
+    <tr><td>/list</td><td>See your recent candidates</td></tr>
+    <tr><td>/profile &lt;id&gt;</td><td>Everything about one candidate</td></tr>
+    <tr><td>/score &lt;id&gt;</td><td>Add or update an interview scorecard</td></tr>
+    <tr><td>/stage &lt;id&gt; &lt;stage&gt;</td><td>Move a candidate to a new stage</td></tr>
+    <tr><td>/dashboard</td><td>A quick text summary of your live metrics</td></tr>
+    <tr><td>/delete &lt;id&gt;</td><td>Remove a candidate</td></tr>
+    <tr><td>/schedule &lt;id&gt; &lt;date&gt; &lt;time&gt;</td><td>Book an interview — round tracked automatically</td></tr>
+    <tr><td>/pipeline</td><td>See upcoming interviews ("all" for full history)</td></tr>
+    <tr><td>/today</td><td>What's on today, right now</td></tr>
+    <tr><td>/outcome &lt;id&gt; &lt;result&gt;</td><td>Log Hired, Rejected, No-show, or Pending</td></tr>
+    <tr><td>/reschedule &lt;id&gt;</td><td>Move an interview to a new time</td></tr>
+    <tr><td>/cancelinterview &lt;id&gt;</td><td>Remove a scheduled interview</td></tr>
+    <tr><td>/start</td><td>Say hello — shows everything the bot can do</td></tr>
+    <tr><td>/cancel</td><td>Step out of whatever you're mid-way through</td></tr>
+  </table>
+</section>
+
+<section id="help">
+  <div class="section-tag">💛 the point of it</div>
+  <h2>How this helps, day to day</h2>
+  <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Nothing to hold in your head</h3><p>The bot remembers who's interviewing when, so you're not keeping a mental list running all day.</p></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><h3>No app-switching</h3><p>You're probably already on Telegram — this lives right where you already are.</p></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Reminders come to you</h3><p>A message just shows up shortly before each interview, on its own.</p></div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><h3>Closing the loop takes one line</h3><p>Right after a call, log the outcome — no returning to it later trying to remember details.</p></div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body"><h3>Mornings start informed</h3><p>A digest lands before your day even begins, so you walk in already knowing what's ahead.</p></div></div>
+</section>
+
+<section id="honest">
+  <div class="section-tag">💬 last thing</div>
+  <h2>A few honest notes</h2>
+  <ul class="honest-list">
+    <li>This bot is private — only approved people can use it, so your data stays yours.</li>
+    <li>The bot and the HiringBuddy app are two separate tools right now. A candidate added in one won't automatically appear in the other — pick whichever feels natural for each moment.</li>
+    <li>If something ever goes wrong, the bot tells you plainly what happened instead of staying silent.</li>
+    <li>Nothing here is permanent except deleting a candidate, and even that requires you to type the command deliberately.</li>
+  </ul>
+</section>
+
+</main>
+
+<div class="closing">
+  <p>Made with care, just for you. 💛</p>
+</div>
+
+</body>
+</html>
