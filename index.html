@@ -70,7 +70,7 @@
      instead of snapping instantly. Content inside fades separately so
      text doesn't visibly wrap/reflow mid-animation. */
   .sidebar.collapsed{width:0; padding-left:0; padding-right:0;}
-  .sidebar-inner{width:220px; flex-shrink:0;}
+  .sidebar-inner{width:100%; flex-shrink:0;}
   .sidebar.collapsed .sidebar-inner{opacity:0; pointer-events:none;}
   .sidebar-inner{transition:opacity 0.15s ease; display:flex; flex-direction:column; height:100%;}
 
@@ -955,7 +955,7 @@ function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<
 /* ============ Google Sign-In + Drive backup ============ */
 // IMPORTANT: replace with your own Client ID from Google Cloud Console.
 // See SETUP.md "Google Drive backup setup" for exact steps.
-const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '268468362824-gp51q9fhttim8jvsn347okuh71vahh15.apps.googleusercontent.com';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
 const DRIVE_FILE_NAME = 'hiringbuddy_backup.json';
 
@@ -1017,17 +1017,37 @@ function initGoogle(){
         driveStatus('Not set up yet — see SETUP.md');
         return;
       }
-      // Calling requestAccessToken() synchronously, directly inside this
-      // click handler with no await/setTimeout before it, is what keeps
-      // the browser treating the resulting popup as user-initiated —
-      // any delay here is exactly what causes mobile browsers to block
-      // it as an unrequested popup.
-      tokenClient.requestAccessToken();
+      if(!tokenClient){
+        // If Google's script hasn't finished loading yet (slow network,
+        // or a browser extension blocking accounts.google.com), tokenClient
+        // stays undefined and calling .requestAccessToken() on it would
+        // throw silently — this used to mean "click Sign In, nothing
+        // happens, no explanation." Now it's a clear, visible message.
+        driveStatus('Still loading Google Sign-In — wait a moment and try again. If this persists, check for ad-blockers or extensions blocking accounts.google.com.');
+        return;
+      }
+      try{
+        // Calling requestAccessToken() synchronously, directly inside this
+        // click handler with no await/setTimeout before it, is what keeps
+        // the browser treating the resulting popup as user-initiated —
+        // any delay here is exactly what causes mobile browsers to block
+        // it as an unrequested popup.
+        tokenClient.requestAccessToken();
+      }catch(e){
+        console.error('requestAccessToken threw', e);
+        driveStatus('Sign-in couldn\u2019t start — please reload the page and try again.');
+      }
     };
     document.getElementById('driveSignInBtn').addEventListener('click', handleSignInClick);
     document.getElementById('mobileDriveSignInBtn')?.addEventListener('click', handleSignInClick);
   }catch(e){
-    console.warn('Google init failed', e);
+    // This used to only log to console.warn — invisible unless someone
+    // is actively looking at DevTools, which meant "click Sign In and
+    // nothing happens" gave zero clue why. Surfacing it in driveStatus
+    // means a real failure here (bad Client ID, library didn't load,
+    // browser blocking the script, etc.) is now visible on screen.
+    console.error('Google init failed', e);
+    driveStatus('Sign-in isn\'t available right now (setup issue) — try reloading the page.');
   }
 }
 
