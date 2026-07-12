@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HiringBuddy — Meet Your Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blush:#FFF3F0; --cream:#FFFBF7; --rose:#E8A0A0; --rose-deep:#D97C7C;
+    --honey:#E8B96B; --sage:#9CAF88; --cocoa:#8B6355; --ink:#4A3B36; --line:#F3DCD5;
+    --tg-bg:#0e1621; --tg-bubble-in:#1c2733; --tg-bubble-out:#2b5278;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--cream); color:var(--ink); font-family:'Quicksand', sans-serif; overflow-x:hidden;}
+
+  .hearts-field{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;}
+  .heart{position:absolute; opacity:0.15; color:var(--rose); animation:float 14s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-22px) rotate(6deg);}}
+
+  section{position:relative; z-index:1; padding:60px 24px; max-width:720px; margin:0 auto;}
+
+  .hero{text-align:center; padding-top:70px; padding-bottom:40px;}
+  .bear{width:100px; margin:0 auto 16px; display:block;}
+  .hero-eyebrow{font-size:12.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--rose-deep); font-weight:600; margin-bottom:8px;}
+  .hero h1{font-family:'Caveat', cursive; font-size:44px; font-weight:600; color:var(--cocoa); line-height:1.15;}
+  .hero h1 span{color:var(--rose-deep);}
+  .hero-sub{font-size:15.5px; color:var(--ink); opacity:0.78; margin-top:12px; max-width:500px; margin-left:auto; margin-right:auto; line-height:1.6;}
+  .care-note{
+    font-family:'Caveat', cursive; font-size:19px; color:var(--rose-deep);
+    background:var(--blush); border:1.5px dashed var(--rose); border-radius:16px;
+    padding:14px 22px; max-width:480px; margin:16px auto 0; line-height:1.5;
+  }
+
+  .section-tag{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--rose-deep); background:var(--blush); padding:6px 14px; border-radius:20px; margin-bottom:14px;}
+  h2{font-family:'Caveat', cursive; font-size:32px; color:var(--cocoa); margin-bottom:8px; font-weight:600;}
+  .lead{font-size:14.5px; color:var(--ink); opacity:0.78; line-height:1.6; max-width:580px; margin-bottom:22px;}
+
+  /* Two apps explainer */
+  .two-card-row{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px;}
+  .two-card{background:var(--card,#FFFDF9); border:2px solid var(--line); border-radius:18px; padding:18px;}
+  .two-card-emoji{font-size:26px; margin-bottom:6px;}
+  .two-card-title{font-weight:700; font-size:14.5px; color:var(--cocoa); margin-bottom:4px;}
+  .two-card-text{font-size:12.5px; line-height:1.55; opacity:0.8;}
+
+  /* Setup steps */
+  .step-card{
+    background:var(--cream); border:2px solid var(--line); border-radius:18px;
+    padding:18px 20px; margin-bottom:12px; display:flex; gap:14px; align-items:flex-start;
+  }
+  .step-num{
+    flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--honey); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:'Caveat',cursive; font-size:17px; font-weight:600;
+  }
+  .step-body h3{font-size:14.5px; font-weight:700; color:var(--cocoa); margin-bottom:3px;}
+  .step-body p{font-size:13px; line-height:1.55; opacity:0.85;}
+  .step-body code{background:var(--blush); color:var(--rose-deep); padding:2px 7px; border-radius:6px; font-size:12px;}
+
+  /* Telegram mockup frame */
+  .tg-frame{
+    background:var(--tg-bg); border-radius:20px; overflow:hidden; margin:20px 0 8px;
+    box-shadow:0 10px 30px rgba(74,59,54,0.18);
+  }
+  .tg-header{
+    background:#17212b; color:#fff; padding:13px 16px; display:flex; align-items:center; gap:11px;
+  }
+  .tg-avatar{
+    width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#C9622B,#8A6D3B);
+    display:flex; align-items:center; justify-content:center; font-size:17px;
+  }
+  .tg-name{font-size:14.5px; font-weight:600; font-family:'Quicksand',sans-serif;}
+  .tg-sub{font-size:11px; color:#7c8a99; margin-top:1px;}
+  .tg-chat{padding:16px 12px;}
+  .tg-row{display:flex; margin-bottom:9px;}
+  .tg-row.out{justify-content:flex-end;}
+  .tg-bubble{
+    max-width:84%; padding:8px 12px; border-radius:13px; font-size:13px; line-height:1.5; color:#e4e9ee;
+    white-space:pre-wrap; font-family:'Quicksand',sans-serif;
+  }
+  .tg-bubble.in{background:var(--tg-bubble-in); border-top-left-radius:4px;}
+  .tg-bubble.out{background:var(--tg-bubble-out); border-top-right-radius:4px;}
+  .tg-time{font-size:9.5px; color:#7c8a99; margin-top:3px; text-align:right;}
+  .tg-divider{text-align:center; color:#7c8a99; font-size:10px; margin:14px 0 10px; text-transform:uppercase; letter-spacing:.04em;}
+  .tg-divider span{background:var(--tg-bubble-in); padding:3px 10px; border-radius:9px;}
+
+  .quote-note{
+    font-family:'Caveat', cursive; font-size:19px; color:var(--rose-deep); text-align:center; margin-top:16px;
+  }
+
+  .closing{text-align:center; padding:80px 24px 100px;}
+  .closing-bear{width:80px; margin:0 auto 16px;}
+  .closing h2{font-size:30px;}
+  .closing p{font-size:14px; opacity:0.78; max-width:420px; margin:12px auto 0; line-height:1.65;}
+  .signoff{font-family:'Caveat', cursive; font-size:22px; color:var(--rose-deep); margin-top:22px;}
+  .divider-line{width:60px; height:3px; background:var(--rose); border-radius:2px; margin:0 auto 32px; opacity:0.4;}
+
+  @media (max-width:600px){
+    .hero h1{font-size:36px;}
+    .two-card-row{grid-template-columns:1fr;}
+    section{padding:46px 18px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts-field" id="heartsField"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <svg class="bear" viewBox="0 0 120 120" fill="none">
+    <circle cx="30" cy="28" r="14" fill="#D9A876"/><circle cx="90" cy="28" r="14" fill="#D9A876"/>
+    <circle cx="30" cy="28" r="7" fill="#F2D3A8"/><circle cx="90" cy="28" r="7" fill="#F2D3A8"/>
+    <circle cx="60" cy="62" r="42" fill="#E8B96B"/><circle cx="60" cy="70" r="22" fill="#F2D3A8"/>
+    <circle cx="46" cy="55" r="5" fill="#4A3B36"/><circle cx="74" cy="55" r="5" fill="#4A3B36"/>
+    <ellipse cx="60" cy="70" rx="6" ry="4.5" fill="#4A3B36"/>
+    <path d="M52 78 Q60 84 68 78" stroke="#4A3B36" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div class="hero-eyebrow">the part nobody told you about yet</div>
+  <h1>You also have a <span>Telegram bot</span> 🧸</h1>
+  <div class="care-note">A little note before we start — this bot is new and still learning its own footing, same as any of us on a first day. If something feels clunky or a message doesn't land quite right, that's alright. Be gentle with it, and it'll take good care of you back. 💛</div>
+  <p class="hero-sub">HiringBuddy isn't just the app on your home screen — there's a second little helper living in Telegram, made for scheduling interviews and getting gentle reminders without opening anything at all.</p>
+</section>
+
+<!-- TWO APPS EXPLAINER -->
+<section>
+  <div class="section-tag">🎀 two halves, one buddy</div>
+  <h2>How the two pieces fit together</h2>
+  <p class="lead">You don't need to choose — they're meant to work side by side, each doing what it's best at.</p>
+  <div class="two-card-row">
+    <div class="two-card">
+      <div class="two-card-emoji">📱</div>
+      <div class="two-card-title">The HiringBuddy app</div>
+      <div class="two-card-text">Your dashboards. The one you screen-share in interviews. Lives on your home screen.</div>
+    </div>
+    <div class="two-card">
+      <div class="two-card-emoji">💬</div>
+      <div class="two-card-title">The HiringBuddy bot</div>
+      <div class="two-card-text">Lives inside Telegram. For scheduling interviews, logging outcomes, and getting reminders — just by texting.</div>
+    </div>
+  </div>
+  <p class="quote-note">Two separate spaces, each good at something different.</p>
+  <p style="text-align:center; font-size:12.5px; color:var(--ink); opacity:0.6; max-width:480px; margin:10px auto 0; line-height:1.55;">One honest note: they don't share candidates with each other yet — someone added in the bot won't show up in the app, and the other way round. Pick whichever feels natural for the moment.</p>
+</section>
+
+<!-- GETTING STARTED -->
+<section>
+  <div class="section-tag">🐝 finding it</div>
+  <h2>Getting started, step by step</h2>
+
+  <div class="step-card">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h3>Open the link you were sent</h3>
+      <p>You'll have gotten a Telegram invite link alongside this doc — tapping it opens a chat with the bot directly, the same way any Telegram contact would.</p>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h3>Say hello</h3>
+      <p>Send <code>/start</code> — this is the only "setup" step. The bot introduces itself and shows you what it can do.</p>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h3>Just talk to it like texting a colleague</h3>
+      <p>No app to learn, no menus to hunt through — everything happens through short messages, the same way you'd message anyone else.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DUMMY CONVERSATION -->
+<section>
+  <div class="section-tag">💬 what it actually feels like</div>
+  <h2>A real first conversation</h2>
+  <p class="lead">Here's exactly what talking to it looks like — a candidate gets added, an interview gets booked, and a reminder shows up right on time.</p>
+
+  <div class="tg-frame">
+    <div class="tg-header">
+      <div class="tg-avatar">🧸</div>
+      <div>
+        <div class="tg-name">HiringBuddy</div>
+        <div class="tg-sub">bot</div>
+      </div>
+    </div>
+    <div class="tg-chat">
+
+      <div class="tg-row out">
+        <div><div class="tg-bubble out">/start</div><div class="tg-time">10:02 AM</div></div>
+      </div>
+      <div class="tg-row">
+        <div><div class="tg-bubble in">Welcome to HiringBuddy 👋
+
+I can help you log candidates, schedule interviews, and remind you before each one — right here in chat.
+
+Try /add to log your first candidate, whenever you're ready.</div><div class="tg-time">10:02 AM</div></div>
+      </div>
+
+      <div class="tg-divider"><span>a little later</span></div>
+
+      <div class="tg-row out">
+        <div><div class="tg-bubble out">/add</div><div class="tg-time">11:15 AM</div></div>
+      </div>
+      <div class="tg-row">
+        <div><div class="tg-bubble in">Candidate's name?</div><div class="tg-time">11:15 AM</div></div>
+      </div>
+      <div class="tg-row out">
+        <div><div class="tg-bubble out">Neha Kapoor</div><div class="tg-time">11:15 AM</div></div>
+      </div>
+      <div class="tg-row">
+        <div><div class="tg-bubble in">Role they applied for?</div><div class="tg-time">11:15 AM</div></div>
+      </div>
+      <div class="tg-row out">
+        <div><div class="tg-bubble out">Product Analyst</div><div class="tg-time">11:16 AM</div></div>
+      </div>
+      <div class="tg-row">
+        <div><div class="tg-bubble in">✅ Added Neha Kapoor — candidate #1.
+Use /score 1 to add an interview scorecard later.</div><div class="tg-time">11:16 AM</div></div>
+      </div>
+
+      <div class="tg-divider"><span>booking her interview</span></div>
+
+      <div class="tg-row out">
+        <div><div class="tg-bubble out">/schedule 1 2026-07-15 14:30 Technical @Aditya Group</div><div class="tg-time">11:17 AM</div></div>
+      </div>
+      <div class="tg-row">
+        <div><div class="tg-bubble in">📅 Interview #1 (Round 1) scheduled for 2026-07-15 14:30 for Aditya Group.
+You'll get a reminder before it starts.</div><div class="tg-time">11:17 AM</div></div>
+      </div>
+
+      <div class="tg-divider"><span>July 15, 1:30 PM · an hour before</span></div>
+
+      <div class="tg-row">
+        <div><div class="tg-bubble in">⏰ Coming up: Neha Kapoor (Product Analyst) at 2026-07-15 14:30
+Round 1 · Technical @ Aditya Group
+
+After it wraps, log the outcome:
+/outcome 1 Hired (or Rejected, No-show)</div><div class="tg-time">1:30 PM</div></div>
+      </div>
+
+      <div class="tg-divider"><span>3:05 PM · right after the call</span></div>
+
+      <div class="tg-row out">
+        <div><div class="tg-bubble out">/outcome 1 Hired Great structured thinking, clear communicator</div><div class="tg-time">3:05 PM</div></div>
+      </div>
+      <div class="tg-row">
+        <div><div class="tg-bubble in">✅ Interview #1 marked as Hired.</div><div class="tg-time">3:05 PM</div></div>
+      </div>
+
+      <div class="tg-divider"><span>a few days later, wanting the full picture</span></div>
+
+      <div class="tg-row out">
+        <div><div class="tg-bubble out">/profile 1</div><div class="tg-time">Jul 18, 9:40 AM</div></div>
+      </div>
+      <div class="tg-row">
+        <div><div class="tg-bubble in">👤 Neha Kapoor — #1
+
+Role: Product Analyst
+Stage: ✅ Joined
+Channel: Referral
+
+🎯 Scorecard:
+  Technical: 4/5
+  Communication: 5/5
+
+🗓️ Interview history:
+  ✅ Round 1 · 2026-07-15 14:30 · Technical @ Aditya Group — Hired</div><div class="tg-time">9:40 AM</div></div>
+      </div>
+
+    </div>
+  </div>
+  <p class="quote-note">That's really it — no forms, no tabs, just a conversation.</p>
+</section>
+
+<!-- CLOSING -->
+<section class="closing">
+  <div class="divider-line"></div>
+  <svg class="closing-bear" viewBox="0 0 120 120" fill="none">
+    <circle cx="30" cy="28" r="14" fill="#D9A876"/><circle cx="90" cy="28" r="14" fill="#D9A876"/>
+    <circle cx="30" cy="28" r="7" fill="#F2D3A8"/><circle cx="90" cy="28" r="7" fill="#F2D3A8"/>
+    <circle cx="60" cy="62" r="42" fill="#E8B96B"/><circle cx="60" cy="70" r="22" fill="#F2D3A8"/>
+    <path d="M46 52 Q49 48 52 52" stroke="#4A3B36" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M68 52 Q71 48 74 52" stroke="#4A3B36" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="60" cy="70" rx="6" ry="4.5" fill="#4A3B36"/>
+    <path d="M50 80 Q60 88 70 80" stroke="#4A3B36" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </svg>
+  <h2>Two little helpers, one you 💛</h2>
+  <p>The app shows off your work. The bot quietly keeps it organized in the background. Together, they mean you never have to hold all of this in your head.</p>
+  <div class="signoff">say hi to your bot whenever you're ready.</div>
+</section>
+
+<script>
+  const field = document.getElementById('heartsField');
+  const heartPath = 'M12 21s-8-4.6-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 6.4-8 11-8 11z';
+  for(let i=0;i<10;i++){
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 24 24');
+    svg.setAttribute('width', 16 + Math.random()*20);
+    svg.setAttribute('height', 16 + Math.random()*20);
+    svg.classList.add('heart');
+    svg.style.left = Math.random()*100 + 'vw';
+    svg.style.top = Math.random()*100 + '%';
+    svg.style.animationDelay = (Math.random()*10) + 's';
+    svg.style.animationDuration = (10 + Math.random()*8) + 's';
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', heartPath);
+    path.setAttribute('fill', 'currentColor');
+    svg.appendChild(path);
+    field.appendChild(svg);
+  }
+</script>
+
+</body>
+</html>
