@@ -1,0 +1,14 @@
+{
+  "name": "HiringBuddy — Shail",
+  "short_name": "HiringBuddy",
+  "description": "Personal candidate tracker and hiring dashboard.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FBF7F0",
+  "theme_color": "#1F2A24",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
