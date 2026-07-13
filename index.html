@@ -325,6 +325,7 @@
     <div class="drawer-nav-item" data-view="team">👥 <span>Team</span></div>
     <div class="drawer-nav-item" data-view="scorecard">🎯 <span>Scores</span></div>
     <div class="drawer-nav-item" data-view="data">📋 <span>Candidates</span></div>
+    <div class="drawer-nav-item" data-view="settings">⚙️ <span>Settings</span></div>
   </div>
   <div class="drawer-drive-section">
     <button id="mobileDriveSignInBtn" class="btn-ghost drawer-btn">Sign in with Google</button>
@@ -351,6 +352,7 @@
           <div class="nav-item" data-view="team">👥<span>Team</span></div>
           <div class="nav-item" data-view="scorecard">🎯<span>Scores</span></div>
           <div class="nav-item" data-view="data">📋<span>Candidates</span></div>
+          <div class="nav-item" data-view="settings">⚙️<span>Settings</span></div>
         </div>
         <div id="driveSection" style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08);">
           <button id="driveSignInBtn" class="btn-ghost" style="width:100%; color:#C9D1CB; border-color:rgba(255,255,255,0.15); font-size:11px;">Sign in with Google</button>
@@ -428,6 +430,52 @@
         <p class="view-desc">Add, edit, or remove. Everything feeds the dashboards automatically.</p>
         <div id="candidateList"></div>
       </div>
+
+      <div class="view" id="view-settings">
+        <div class="eyebrow">Account</div>
+        <h1>Settings</h1>
+        <p class="view-desc">A few things worth checking, especially around keeping your account secure.</p>
+
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-title">🧑 Your profile</div>
+          <div id="profileSummaryBox" style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+            <div id="profileAvatarPreview" style="width:56px; height:56px; border-radius:50%; background:var(--card); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:24px; flex-shrink:0;">🧑</div>
+            <div style="font-size:13px; color:var(--muted);" id="profileSummaryText">No profile details added yet.</div>
+          </div>
+          <button class="btn-ghost" id="openWizardBtn" style="font-size:12.5px;">Set up / edit profile →</button>
+        </div>
+
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-title">🔐 Account security</div>
+          <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">
+            HiringBuddy signs in through your Google account, so the strongest thing you can do to protect it is enabling
+            Google's own 2-Step Verification — it's more secure than anything we could build ourselves, and Google already maintains it.
+          </p>
+
+          <div id="mfaStatusBox" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-radius:10px; background:var(--card); border:1px solid var(--line); margin-bottom:10px;">
+            <div>
+              <div style="font-size:13px; font-weight:600;" id="mfaStatusLabel">2-Step Verification status: not confirmed yet</div>
+              <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">This is self-reported — HiringBuddy can't read your Google account's security settings directly.</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-ghost" id="mfaEnabledBtn" style="font-size:12px;">✅ I already have it on</button>
+            <button class="btn-ghost" id="mfaNotEnabledBtn" style="font-size:12px;">Not yet — show me how</button>
+          </div>
+
+          <div id="mfaSetupHelp" style="display:none; margin-top:14px; padding:14px; background:#FFF3F0; border-radius:10px; border-left:3px solid var(--accent); font-size:12.5px; line-height:1.6;">
+            Takes about 2 minutes, one time only — after that, Google remembers this device and won't ask again on every login, only if something looks unusual (like a new device signing in).
+            <br><br>
+            <a href="https://myaccount.google.com/signinoptions/two-step-verification" target="_blank" style="color:var(--accent); font-weight:600;">Open Google's 2-Step Verification setup →</a>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">ℹ️ About this device</div>
+          <p style="font-size:13px; color:var(--muted);">More settings — like managing multiple devices or export options — will land here over time.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -435,6 +483,29 @@
 </div>
 
 <!-- ADD/EDIT MODAL -->
+<!-- PROFILE SETUP WIZARD — first-run, one field per screen, skippable at every step -->
+<div class="modal-backdrop" id="profileWizardBackdrop" style="display:none">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <div class="modal-title">Set up your profile</div>
+      <button class="icon-btn" id="wizardCloseBtn" style="font-size:20px">✕</button>
+    </div>
+    <div style="padding:4px 0 14px;">
+      <div style="display:flex; gap:4px; margin-bottom:20px;" id="wizardProgress"></div>
+
+      <div id="wizardStepBody"></div>
+
+      <div style="display:flex; justify-content:space-between; margin-top:22px;">
+        <button class="btn-ghost" id="wizardBackBtn" style="font-size:12.5px;">← Back</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-ghost" id="wizardSkipBtn" style="font-size:12.5px;">Skip this</button>
+          <button class="btn-primary" id="wizardNextBtn" style="font-size:12.5px;">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="modalBackdrop" style="display:none">
   <div class="modal">
     <div class="modal-head">
@@ -477,21 +548,54 @@ let backupInFlight = false;
 
 const DB_NAME = 'hiringbuddy_db';
 const STORE = 'candidates';
+const PROFILE_STORE = 'profile';
 let dbInstance = null;
 
 function openDB(){
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
+    // Version bumped 1 -> 2 to add the profile store. IndexedDB only
+    // runs onupgradeneeded when the version number increases, and it
+    // preserves all existing data in stores that already exist — the
+    // 'candidates' store and everything in it is untouched by this
+    // change, only the new 'profile' store gets created.
+    const req = indexedDB.open(DB_NAME, 2);
     req.onupgradeneeded = (e) => {
       const db = e.target.result;
       if(!db.objectStoreNames.contains(STORE)){
         const store = db.createObjectStore(STORE, { keyPath: 'id' });
         store.createIndex('stage', 'stage', { unique:false });
       }
+      if(!db.objectStoreNames.contains(PROFILE_STORE)){
+        db.createObjectStore(PROFILE_STORE, { keyPath: 'id' });
+      }
     };
     req.onsuccess = (e) => resolve(e.target.result);
     req.onerror = (e) => reject(e.target.error);
   });
+}
+
+async function getProfile(){
+  try{
+    const db = dbInstance || (dbInstance = await openDB());
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(PROFILE_STORE, 'readonly');
+      const req = tx.objectStore(PROFILE_STORE).get('me');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  }catch(e){ console.error('getProfile failed', e); return null; }
+}
+
+async function saveProfile(profileData){
+  try{
+    const db = dbInstance || (dbInstance = await openDB());
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(PROFILE_STORE, 'readwrite');
+      const req = tx.objectStore(PROFILE_STORE).put({ id: 'me', ...profileData, updatedAt: Date.now() });
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => reject(req.error);
+    });
+  }catch(e){ console.error('saveProfile failed', e); return false; }
 }
 
 async function dbAll(){
@@ -600,6 +704,7 @@ function unlockApp(){
   document.getElementById('lockScreen').classList.add('hidden');
   document.getElementById('app').classList.add('visible');
   refreshAllViews();
+  maybeShowProfileWizardFirstRun();
 }
 
 function initLock(){
@@ -616,6 +721,319 @@ const STAGES = ['Applied','Screened','Interviewed','Offered','Joined','Rejected'
 const COLORS = { sage:'#5B7B6C', accent:'#C9622B', ochre:'#8A6D3B', line:'#E8DFD0', muted:'#7A7264' };
 let charts = {};
 let editingId = null;
+
+// ---- Profile setup wizard ----
+// One field per screen, every field skippable, entirely optional overall.
+// Runs automatically on first app use if no profile exists yet, and can
+// be re-opened any time from Settings to fill in anything left blank.
+const WIZARD_STEPS = [
+  { key: 'photo', label: 'Add a profile picture', type: 'photo', hint: 'Helps put a face to the name — totally optional.' },
+  { key: 'fullName', label: "What's your full name?", type: 'text', placeholder: 'e.g. Shail Sharma', maxLength: 80 },
+  { key: 'roleTitle', label: 'Your role or title?', type: 'text', placeholder: 'e.g. Talent Acquisition Specialist', maxLength: 100 },
+  { key: 'company', label: 'Where do you work?', type: 'text', placeholder: 'Company name', maxLength: 100 },
+  { key: 'phone', label: 'A phone number to reach you?', type: 'phone', placeholder: '98765 43210' },
+  { key: 'workingHours', label: 'Your usual working hours?', type: 'timerange' },
+  { key: 'gender', label: 'Gender (optional)', type: 'select', options: ['Prefer not to say', 'Woman', 'Man', 'Non-binary', 'Self-describe'] },
+  { key: 'summary', label: 'A short summary about you', type: 'textarea', placeholder: 'A couple of lines, like a LinkedIn or Naukri bio…', maxLength: 400 },
+  { key: 'skills', label: 'A few of your key skills', type: 'tags', placeholder: 'Type a skill and press Enter' },
+];
+
+let wizardStepIndex = 0;
+let wizardData = {};
+let wizardSkillsBuffer = [];
+
+async function openProfileWizard(){
+  wizardStepIndex = 0;
+  const existing = await getProfile();
+  wizardData = existing ? { ...existing } : {};
+  wizardSkillsBuffer = Array.isArray(wizardData.skills) ? [...wizardData.skills] : [];
+  document.getElementById('profileWizardBackdrop').style.display = 'flex';
+  renderWizardStep();
+}
+
+function closeProfileWizard(){
+  document.getElementById('profileWizardBackdrop').style.display = 'none';
+}
+
+function renderWizardStep(){
+  const step = WIZARD_STEPS[wizardStepIndex];
+  const body = document.getElementById('wizardStepBody');
+  const progress = document.getElementById('wizardProgress');
+
+  // Progress dots — one per step, filled up to current.
+  progress.innerHTML = WIZARD_STEPS.map((_, i) =>
+    `<div style="flex:1; height:4px; border-radius:2px; background:${i <= wizardStepIndex ? 'var(--accent)' : 'var(--line)'};"></div>`
+  ).join('');
+
+  document.getElementById('wizardBackBtn').style.visibility = wizardStepIndex === 0 ? 'hidden' : 'visible';
+  document.getElementById('wizardNextBtn').textContent = wizardStepIndex === WIZARD_STEPS.length - 1 ? 'Finish' : 'Next →';
+
+  let inputHtml = '';
+  const currentVal = wizardData[step.key] || '';
+
+  if(step.type === 'photo'){
+    const previewSrc = wizardData.photo || '';
+    inputHtml = `
+      <div style="text-align:center;">
+        <div id="wizardPhotoPreview" style="width:88px; height:88px; border-radius:50%; margin:0 auto 14px; background:var(--card); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:32px;">
+          ${previewSrc ? `<img src="${previewSrc}" style="width:100%; height:100%; object-fit:cover;">` : '🧑'}
+        </div>
+        <input type="file" accept="image/*" id="wizardPhotoInput" style="font-size:12.5px;">
+      </div>`;
+  }else if(step.type === 'text'){
+    const maxLen = step.maxLength ? ` maxlength="${step.maxLength}"` : '';
+    inputHtml = `<input type="text" id="wizardInput" value="${(currentVal||'').replace(/"/g,'&quot;')}" placeholder="${step.placeholder||''}"${maxLen} style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line); font-size:14px; font-family:inherit;">
+      <div id="wizardFieldError" style="font-size:11.5px; color:var(--accent); margin-top:6px; min-height:14px;"></div>`;
+  }else if(step.type === 'phone'){
+    // type="tel" + inputmode="numeric" gives a numeric keypad on mobile
+    // without the browser trying to auto-format it oddly. Real validation
+    // (10-15 digits, matching how phone numbers actually look worldwide
+    // including a leading + for country code) happens on Next, not just
+    // a placeholder that silently accepted 19 repeated digits before.
+    inputHtml = `<input type="tel" id="wizardInput" inputmode="numeric" value="${(currentVal||'').replace(/"/g,'&quot;')}" placeholder="${step.placeholder||''}" maxlength="16" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line); font-size:14px; font-family:inherit;">
+      <div id="wizardFieldError" style="font-size:11.5px; color:var(--accent); margin-top:6px; min-height:14px;"></div>`;
+  }else if(step.type === 'timerange'){
+    const [fromVal, toVal] = (currentVal||'').includes('|') ? currentVal.split('|') : ['', ''];
+    inputHtml = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="flex:1;">
+          <div style="font-size:11.5px; color:var(--muted); margin-bottom:4px;">From</div>
+          <input type="time" id="wizardTimeFrom" value="${fromVal}" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--line); font-size:14px; font-family:inherit;">
+        </div>
+        <div style="padding-top:18px; color:var(--muted);">–</div>
+        <div style="flex:1;">
+          <div style="font-size:11.5px; color:var(--muted); margin-bottom:4px;">To</div>
+          <input type="time" id="wizardTimeTo" value="${toVal}" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--line); font-size:14px; font-family:inherit;">
+        </div>
+      </div>
+      <div id="wizardFieldError" style="font-size:11.5px; color:var(--accent); margin-top:8px; min-height:14px;"></div>`;
+  }else if(step.type === 'textarea'){
+    const maxLen = step.maxLength ? ` maxlength="${step.maxLength}"` : '';
+    inputHtml = `<textarea id="wizardInput" rows="4" placeholder="${step.placeholder||''}"${maxLen} style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line); font-size:13.5px; font-family:inherit; resize:vertical;">${currentVal||''}</textarea>`;
+  }else if(step.type === 'select'){
+    inputHtml = `<select id="wizardInput" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line); font-size:14px; font-family:inherit;">
+      ${step.options.map(o => `<option ${o===currentVal?'selected':''}>${o}</option>`).join('')}
+    </select>`;
+  }else if(step.type === 'tags'){
+    inputHtml = `
+      <input type="text" id="wizardTagInput" placeholder="${step.placeholder||''}" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line); font-size:14px; font-family:inherit; margin-bottom:10px;">
+      <div id="wizardTagList" style="display:flex; flex-wrap:wrap; gap:6px;"></div>`;
+  }
+
+  body.innerHTML = `<div style="font-size:14.5px; font-weight:600; margin-bottom:12px;">${step.label}</div>${inputHtml}`;
+
+  if(step.type === 'photo'){
+    document.getElementById('wizardPhotoInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        wizardData.photo = reader.result;
+        renderWizardStep(); // refresh to show the preview
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  if(step.type === 'tags'){
+    renderTagList();
+    const tagInput = document.getElementById('wizardTagInput');
+    tagInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && tagInput.value.trim()){
+        e.preventDefault();
+        wizardSkillsBuffer.push(tagInput.value.trim());
+        tagInput.value = '';
+        renderTagList();
+      }
+    });
+  }
+}
+
+function renderTagList(){
+  const list = document.getElementById('wizardTagList');
+  if(!list) return;
+  list.innerHTML = wizardSkillsBuffer.map((skill, i) => `
+    <span style="background:var(--card); border:1px solid var(--line); border-radius:14px; padding:4px 10px; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+      ${escapeHtml(skill)}
+      <span data-remove-skill="${i}" style="cursor:pointer; color:var(--accent); font-weight:700;">✕</span>
+    </span>
+  `).join('');
+  list.querySelectorAll('[data-remove-skill]').forEach(el => {
+    el.addEventListener('click', () => {
+      wizardSkillsBuffer.splice(parseInt(el.dataset.removeSkill), 1);
+      renderTagList();
+    });
+  });
+}
+
+function captureCurrentWizardStep(){
+  const step = WIZARD_STEPS[wizardStepIndex];
+  if(step.type === 'tags'){
+    wizardData.skills = [...wizardSkillsBuffer];
+  }else if(step.type === 'timerange'){
+    const from = document.getElementById('wizardTimeFrom')?.value || '';
+    const to = document.getElementById('wizardTimeTo')?.value || '';
+    wizardData[step.key] = (from || to) ? `${from}|${to}` : '';
+  }else if(step.type !== 'photo'){
+    const el = document.getElementById('wizardInput');
+    if(el) wizardData[step.key] = el.value;
+  }
+}
+
+// Validates the CURRENT step's input before allowing "Next" to advance.
+// Deliberately permissive: an empty field always passes (everything is
+// optional, per design), and this only blocks genuinely malformed input
+// like the 19-digit string that slipped through before this existed —
+// not partial or in-progress typing.
+function validateCurrentWizardStep(){
+  const step = WIZARD_STEPS[wizardStepIndex];
+  const errorEl = document.getElementById('wizardFieldError');
+
+  if(step.type === 'phone'){
+    const val = (document.getElementById('wizardInput')?.value || '').trim();
+    if(!val) return true; // empty is fine, it's optional
+    // Accept an optional leading + then 7-15 digits — permissive enough
+    // for real international numbers, strict enough to reject obvious
+    // garbage like repeated-digit strings or letters.
+    const digitsOnly = val.replace(/[\s-]/g, '');
+    const validPattern = /^\+?\d{7,15}$/;
+    if(!validPattern.test(digitsOnly)){
+      if(errorEl) errorEl.textContent = 'That doesn\u2019t look like a valid phone number — expecting 7-15 digits, optionally with a leading +.';
+      return false;
+    }
+    // Reject the "all one repeated digit" pattern specifically, since
+    // that passes the digit-count check but is still obviously not a
+    // real number (this is exactly what slipped through as
+    // "8888888888888888888" before validation existed at all).
+    const stripped = digitsOnly.replace(/^\+/, '');
+    if(/^(\d)\1+$/.test(stripped)){
+      if(errorEl) errorEl.textContent = 'That number is all the same digit repeated — please double check it.';
+      return false;
+    }
+  }
+
+  if(step.type === 'timerange'){
+    const from = document.getElementById('wizardTimeFrom')?.value || '';
+    const to = document.getElementById('wizardTimeTo')?.value || '';
+    if(from && to && from >= to){
+      if(errorEl) errorEl.textContent = 'End time should be after the start time.';
+      return false;
+    }
+  }
+
+  if(errorEl) errorEl.textContent = '';
+  return true;
+}
+
+async function finishWizard(){
+  captureCurrentWizardStep();
+  await saveProfile(wizardData);
+  try{ localStorage.setItem('hiringbuddy_profile_wizard_seen', '1'); }catch(e){}
+  closeProfileWizard();
+  // The data saves correctly to IndexedDB regardless, but without this
+  // call the Settings screen she's looking at wouldn't visually update
+  // until some unrelated action happened to trigger refreshAllViews —
+  // she'd see stale "no profile yet" text despite having just filled
+  // it in, which would look like the save silently failed.
+  renderProfileSummary();
+}
+
+document.getElementById('wizardNextBtn').addEventListener('click', async () => {
+  if(!validateCurrentWizardStep()) return; // error message already shown, stay on this step
+  captureCurrentWizardStep();
+  if(wizardStepIndex === WIZARD_STEPS.length - 1){
+    await finishWizard();
+  }else{
+    wizardStepIndex++;
+    renderWizardStep();
+  }
+});
+document.getElementById('wizardBackBtn').addEventListener('click', () => {
+  captureCurrentWizardStep();
+  if(wizardStepIndex > 0){ wizardStepIndex--; renderWizardStep(); }
+});
+document.getElementById('wizardSkipBtn').addEventListener('click', async () => {
+  // Skip clears any half-entered value for this step, then advances —
+  // "skip" means leave it blank, not save a partial edit.
+  delete wizardData[WIZARD_STEPS[wizardStepIndex].key];
+  if(wizardStepIndex === WIZARD_STEPS.length - 1){
+    await finishWizard();
+  }else{
+    wizardStepIndex++;
+    renderWizardStep();
+  }
+});
+document.getElementById('wizardCloseBtn').addEventListener('click', async () => {
+  // Closing early (the X) still saves whatever was filled in so far —
+  // no reason to discard progress just because she didn't finish all
+  // 9 steps in one sitting.
+  captureCurrentWizardStep();
+  await saveProfile(wizardData);
+  try{ localStorage.setItem('hiringbuddy_profile_wizard_seen', '1'); }catch(e){}
+  closeProfileWizard();
+  renderProfileSummary();
+});
+
+// First-run trigger: only shows automatically once, ever, per device —
+// re-opening later (e.g. from Settings to fill in what she skipped) is
+// always available but never auto-pops-up again uninvited.
+async function maybeShowProfileWizardFirstRun(){
+  try{
+    const seen = localStorage.getItem('hiringbuddy_profile_wizard_seen');
+    if(seen) return;
+    const existing = await getProfile();
+    if(existing) return; // already has a profile, e.g. restored from Drive
+    openProfileWizard();
+  }catch(e){ /* fail silent — never block app usage over this */ }
+}
+
+document.getElementById('openWizardBtn')?.addEventListener('click', openProfileWizard);
+
+// MFA self-reported status — persisted locally since Google doesn't
+// expose this via the Drive API scope we have; this is an honest
+// self-check mechanism, not automatic detection.
+const MFA_STATUS_KEY = 'hiringbuddy_mfa_status';
+function renderMfaStatus(){
+  const status = localStorage.getItem(MFA_STATUS_KEY);
+  const label = document.getElementById('mfaStatusLabel');
+  const help = document.getElementById('mfaSetupHelp');
+  if(!label) return;
+  if(status === 'enabled'){
+    label.textContent = "2-Step Verification: ✅ you've confirmed it's on";
+    help.style.display = 'none';
+  }else if(status === 'not_enabled'){
+    label.textContent = '2-Step Verification: not enabled yet';
+    help.style.display = 'block';
+  }else{
+    label.textContent = '2-Step Verification status: not confirmed yet';
+    help.style.display = 'none';
+  }
+}
+document.getElementById('mfaEnabledBtn')?.addEventListener('click', () => {
+  localStorage.setItem(MFA_STATUS_KEY, 'enabled');
+  renderMfaStatus();
+});
+document.getElementById('mfaNotEnabledBtn')?.addEventListener('click', () => {
+  localStorage.setItem(MFA_STATUS_KEY, 'not_enabled');
+  renderMfaStatus();
+});
+
+async function renderProfileSummary(){
+  const profile = await getProfile();
+  const avatarEl = document.getElementById('profileAvatarPreview');
+  const textEl = document.getElementById('profileSummaryText');
+  if(!avatarEl || !textEl) return;
+  if(!profile){
+    avatarEl.innerHTML = '🧑';
+    textEl.textContent = 'No profile details added yet.';
+    return;
+  }
+  if(profile.photo){
+    avatarEl.innerHTML = `<img src="${profile.photo}" style="width:100%; height:100%; object-fit:cover;">`;
+  }
+  const parts = [profile.fullName, profile.roleTitle, profile.company].filter(Boolean);
+  textEl.textContent = parts.length ? parts.join(' · ') : 'Some details still missing — tap below to fill them in.';
+}
+
 
 function switchView(viewName){
   document.querySelectorAll('.nav-item, .drawer-nav-item').forEach(n => n.classList.remove('active'));
@@ -829,6 +1247,8 @@ async function refreshAllViews(){
     ['Team', () => renderTeam(all)],
     ['Scorecard', () => renderScorecard(all)],
     ['CandidateList', () => renderCandidateList(all)],
+    ['ProfileSummary', () => renderProfileSummary()],
+    ['MfaStatus', () => renderMfaStatus()],
   ];
   for(const [name, fn] of renders){
     try{ fn(); }
@@ -960,6 +1380,13 @@ const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
 const DRIVE_FILE_NAME = 'hiringbuddy_backup.json';
 
 let googleAccessToken = null;
+// Small localStorage marker (NOT the token itself) so the app knows
+// whether attempting a silent re-auth on load is worth trying. Storing
+// the actual access token would be a real security downgrade — anyone
+// with access to this device's storage would get standing Drive
+// access — so only this yes/no flag is persisted, never the token.
+const SIGNED_IN_BEFORE_KEY = 'hiringbuddy_google_signed_in_before';
+let silentAttemptInProgress = false;
 let tokenClient = null;
 let gapiLoaded = false;
 
@@ -999,6 +1426,14 @@ function initGoogle(){
       scope: DRIVE_SCOPE,
       callback: (resp) => {
         if(resp.error){
+          // A silent (prompt:'none') attempt failing just means she
+          // needs to sign in manually again — normal, not an error to
+          // surface loudly, since this can happen on every app open
+          // if Google's prior consent has expired or was revoked.
+          if(silentAttemptInProgress){
+            silentAttemptInProgress = false;
+            return;
+          }
           if(resp.error === 'popup_closed_by_user'){
             driveStatus('Sign-in window closed before finishing — try again.');
           }else if(resp.error === 'popup_failed_to_open'){
@@ -1008,10 +1443,33 @@ function initGoogle(){
           }
           return;
         }
+        silentAttemptInProgress = false;
         googleAccessToken = resp.access_token;
+        // Remember that this device has signed in before — this is NOT
+        // the access token itself (those expire in ~1hr and are never
+        // persisted to disk, on purpose, since a stolen persisted token
+        // would grant standing Drive access). It's only a small marker
+        // so future app opens know it's worth attempting a silent
+        // re-auth instead of always requiring a fresh manual click.
+        try{ localStorage.setItem(SIGNED_IN_BEFORE_KEY, '1'); }catch(e){}
         onSignedIn();
       }
     });
+
+    // If this device has signed in before, try a SILENT re-auth right
+    // away — prompt:'none' asks Google for a fresh token without
+    // showing any popup at all, which succeeds as long as she hasn't
+    // revoked access. This is what actually fixes "gets signed out
+    // every time the app is closed and reopened" — previously there
+    // was no attempt to restore the session at all, only a manual
+    // Sign-In button with nothing behind the scenes trying first.
+    let signedInBefore = false;
+    try{ signedInBefore = localStorage.getItem(SIGNED_IN_BEFORE_KEY) === '1'; }catch(e){}
+    if(signedInBefore){
+      silentAttemptInProgress = true;
+      tokenClient.requestAccessToken({ prompt: 'none' });
+    }
+
     const handleSignInClick = () => {
       if(GOOGLE_CLIENT_ID.startsWith('YOUR_CLIENT_ID')){
         driveStatus('Not set up yet — see SETUP.md');
